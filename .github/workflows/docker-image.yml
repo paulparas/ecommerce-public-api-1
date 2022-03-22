@@ -49,16 +49,16 @@ jobs:
           
     - name: Build, tag, and push image to Amazon ECR
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}                                                       
-        RELEASE_IMAGE: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_REVISION }}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}         
+        IMAGE_TAG: ${{ github.sha }}
       run: |
-        docker build -t ${{ env.RELEASE_IMAGE }} .
-        docker push ${{ env.RELEASE_IMAGE }}       
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG       
     
     - name: Deploy to Kubernetes cluster                                                                            
       uses: kodermax/kubectl-aws-eks@master                                                                         
       env:                                                                                                          
-        RELEASE_IMAGE: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.RELEASE_REVISION }}
+        RELEASE_IMAGE: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
       with:                                                                                                         
         args: set image deployment/public-api app=${{ env.RELEASE_IMAGE }} --record -n $KUBE_NAMESPACE
         
