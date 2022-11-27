@@ -20,7 +20,7 @@ namespace public_api_interface.Controllers
         [Route("GetUsers")]
         public async Task<IEnumerable<User>> GetUsers()
         {
-            Uri requestUri = new("http://host.docker.internal:9093/User/GetUsers");
+            Uri requestUri = new("http://localhost:8083/User/GetUsers");
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
             var response = await _httpClient.GetAsync(requestUri);
             var content = await response.Content.ReadAsStringAsync();

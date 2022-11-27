@@ -19,7 +19,7 @@ namespace public_api_interface.Controllers
         [Route("GetProducts")]
         public async Task<IEnumerable<Product>> GetProductsAsync()
         {
-            Uri requestUri = new("http://host.docker.internal:9091/Product/GetProducts");
+            Uri requestUri = new("http://localhost:8081/Product/GetProducts");
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
             var response = await _httpClient.GetAsync(requestUri);
             var content = await response.Content.ReadAsStringAsync();
