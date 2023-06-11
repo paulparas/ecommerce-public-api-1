@@ -53,7 +53,8 @@ jobs:
         IMAGE_TAG: ${{ github.ref_name }}
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG       
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY
     
     # - name: Deploy to Kubernetes cluster                                                                            
     #   uses: kodermax/kubectl-aws-eks@master                                                                         
