@@ -8,16 +8,16 @@ ENV ASPNETCORE_URLS=http://+:80
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["public-api-interface.csproj", "."]
-RUN dotnet restore "./public-api-interface.csproj"
+COPY ["ecommerce-public-api-1.csproj", "."]
+RUN dotnet restore "./ecommerce-public-api-1.csproj"
 COPY . .
 WORKDIR "/src/."
-RUN dotnet build "public-api-interface.csproj" -c Release -o /app/build
+RUN dotnet build "ecommerce-public-api-1.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "public-api-interface.csproj" -c Release -o /app/publish
+RUN dotnet publish "ecommerce-public-api-1.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "public-api-interface.dll", "--server.urls", "http://+:80"]]
+ENTRYPOINT ["dotnet", "ecommerce-public-api-1.dll", "--server.urls", "http://+:80"]]

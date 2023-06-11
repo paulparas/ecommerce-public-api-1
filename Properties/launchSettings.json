@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "public_api_interface": {
+    "ecommerce_public_api_1": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",

@@ -20,7 +20,7 @@ namespace public_api_interface.Controllers
         [Route("GetOrders")]
         public async Task<IEnumerable<Order>> GetOrders()
         {
-            Uri requestUri = new("http://localhost:8082/Order/GetOrders");
+            Uri requestUri = new("http://localhost:5181/Order/GetOrders");
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
             var response = await _httpClient.GetAsync(requestUri);
             var content = await response.Content.ReadAsStringAsync();
