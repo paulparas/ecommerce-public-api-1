@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace public_api_interface.Controllers
@@ -9,17 +10,19 @@ namespace public_api_interface.Controllers
     {
         private readonly ILogger<ProductController> _logger;
         private readonly HttpClient _httpClient;
-        public ProductController(ILogger<ProductController> logger, IHttpClientFactory httpClientFactory)
+        private readonly HostSettings _hostSettings;
+        public ProductController(ILogger<ProductController> logger, IHttpClientFactory httpClientFactory, IOptions<HostSettings> options)
         {
             _logger = logger;
             _httpClient = httpClientFactory.CreateClient();
+            _hostSettings = options.Value;
         }
 
         [HttpGet]
         [Route("GetProducts")]
         public async Task<IEnumerable<Product>> GetProductsAsync()
         {
-            Uri requestUri = new("http://host.docker.internal:5181/Product/GetProducts");
+            Uri requestUri = new($"http://{_hostSettings.ProductApiUrl}/Product/GetProducts");
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
             var response = await _httpClient.GetAsync(requestUri);
             var content = await response.Content.ReadAsStringAsync();

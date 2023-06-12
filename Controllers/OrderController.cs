@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace public_api_interface.Controllers
@@ -10,17 +10,19 @@ namespace public_api_interface.Controllers
     {
         private readonly ILogger<OrderController> _logger;
         private readonly HttpClient _httpClient;
-        public OrderController(ILogger<OrderController> logger, IHttpClientFactory httpClientFactory)
+        private readonly HostSettings _hostSettings;
+        public OrderController(ILogger<OrderController> logger, IHttpClientFactory httpClientFactory, IOptions<HostSettings> options)
         {
             _logger = logger;
             _httpClient = httpClientFactory.CreateClient();
+            _hostSettings = options.Value;
         }
 
         [HttpGet]
         [Route("GetOrders")]
         public async Task<IEnumerable<Order>> GetOrders()
         {
-            Uri requestUri = new("http://host.docker.internal:5180/Order/GetOrders");
+            Uri requestUri = new($"http://{_hostSettings.OrderApiUrl}/Order/GetOrders");
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
             var response = await _httpClient.GetAsync(requestUri);
             var content = await response.Content.ReadAsStringAsync();
