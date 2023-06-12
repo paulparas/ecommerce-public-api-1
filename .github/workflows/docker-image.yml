@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Production Deployment
 
 on:
   push:
@@ -55,6 +55,8 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    environment: 
+      name: Production
     needs: analyze
     
     steps:
