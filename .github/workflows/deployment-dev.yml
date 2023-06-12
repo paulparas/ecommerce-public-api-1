@@ -1,0 +1,106 @@
+name: Production Deployment
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  RELEASE_REVISION: "pr-${{ github.event.pull_request.number }}-${{github.ref_name}}"
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+  KUBE_NAMESPACE: production
+  ECR_REPOSITORY: promotion-assessment/ecommerce-public-api-1
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    timeout-minutes: ${{ (matrix.language == 'swift' && 120) || 360 }}
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'csharp' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Initializes the CodeQL tools for scanning.
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: ${{ matrix.language }}
+        
+    # Autobuild attempts to build any compiled languages  (C/C++, C#, Go, or Java).
+    # If this step fails, then you should remove it and run the build manually (see below)
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v2
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+      with:
+        category: "/language:${{matrix.language}}"
+
+  build:
+
+    runs-on: ubuntu-latest
+    environment: 
+      name: Development
+    needs: analyze
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+    
+    - name: Create tag artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{github.ref_name}}
+        path: Release
+    
+    - name: Set env
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1   
+          
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}         
+        IMAGE_TAG: ${{ github.ref_name }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY .
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY
+    
+    # - name: Deploy to Kubernetes cluster                                                                            
+    #   uses: kodermax/kubectl-aws-eks@master                                                                         
+    #   env:                                                                                                          
+    #     RELEASE_IMAGE: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+    #   with:                                                                                                         
+    #     args: set image deployment/public-api app=${{ env.RELEASE_IMAGE }} --record -n $KUBE_NAMESPACE
+        
+    # - name: Verify Kubernetes deployment                               
+    #   uses: kodermax/kubectl-aws-eks@master                            
+    #   with:                                                            
+    #     args: rollout status deploy public-api -n $KUBE_NAMESPACE
