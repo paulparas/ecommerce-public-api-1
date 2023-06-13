@@ -12,52 +12,17 @@ env:
   RELEASE_REVISION: "pr-${{ github.event.pull_request.number }}-${{github.ref_name}}"
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_REGION: ${{ vars.AWS_REGION }}
   KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-  KUBE_NAMESPACE: production
+  #KUBE_NAMESPACE: production
   ECR_REPOSITORY: promotion-assessment/ecommerce-public-api-1
 
 jobs:
-  analyze:
-    name: Analyze
-    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
-    timeout-minutes: ${{ (matrix.language == 'swift' && 120) || 360 }}
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'csharp' ]
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    # Initializes the CodeQL tools for scanning.
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: ${{ matrix.language }}
-        
-    # Autobuild attempts to build any compiled languages  (C/C++, C#, Go, or Java).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v2
-
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
-      with:
-        category: "/language:${{matrix.language}}"
-
   build:
 
     runs-on: ubuntu-latest
     environment: 
       name: Production
-    needs: analyze
     
     steps:
     - name: Checkout Code
@@ -92,6 +57,24 @@ jobs:
         docker tag $ECR_REGISTRY/$ECR_REPOSITORY $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY
+        
+    - name: Install kubectl
+      uses: azure/setup-kubectl@v2.0
+      with:
+        version: 'v1.25.0' # default is latest stable
+      id: install
+      
+    - name: Update kube config
+      run: aws eks update-kubeconfig --name promotion-assessment --kubeconfig $HOME/.kube/config
+      
+    - name: Configure kubectl
+      run: |
+          echo "${{ env.KUBE_CONFIG_DATA }}" > $HOME/.kube/config
+    
+    - name: Deploy to EKS
+      run: |
+        kubectl apply -f k8s/deployment-prod.yaml
+        kubectl apply -f k8s/ingress.yaml
     
     # - name: Deploy to Kubernetes cluster                                                                            
     #   uses: kodermax/kubectl-aws-eks@master                                                                         
