@@ -99,12 +99,12 @@ jobs:
         version: 'v1.25.0' # default is latest stable
       id: install
       
-    #- name: Update kube config
-    #  run: aws eks update-kubeconfig --name primuslearning
+    - name: Update kube config
+      run: aws eks update-kubeconfig --name promotion-assessment
     
-    #- name: Deploy to EKS
-    #  run: |
-    #    kubectl apply -f deployment.yaml
+    - name: Deploy to EKS
+      run: |
+        kubectl apply -f deployment-dev.yaml
     #    kubectl apply -f service.yaml
     
     # - name: Deploy to Kubernetes cluster                                                                            
