@@ -64,8 +64,8 @@ jobs:
         version: 'v1.25.0' # default is latest stable
       id: install
       
-    #- name: Update kube config
-    #  run: aws eks update-kubeconfig --name promotion-assessment --kubeconfig /home/runner/.kube/config
+    - name: Update kube config
+      run: aws eks update-kubeconfig --name promotion-assessment --kubeconfig $HOME/.kube/config
       
     - name: Configure kubectl
       run: |
