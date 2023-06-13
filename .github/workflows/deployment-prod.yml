@@ -12,7 +12,7 @@ env:
   RELEASE_REVISION: "pr-${{ github.event.pull_request.number }}-${{github.ref_name}}"
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_REGION: ${{ env.AWS_REGION }}
   KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
   #KUBE_NAMESPACE: production
   ECR_REPOSITORY: promotion-assessment/ecommerce-public-api-1
@@ -69,7 +69,7 @@ jobs:
       
     - name: Configure kubectl
       run: |
-          echo "${{ secrets.KUBE_CONFIG_DATA }}" > $HOME/.kube/config
+          echo "${{ env.KUBE_CONFIG_DATA }}" > $HOME/.kube/config
     
     - name: Deploy to EKS
       run: |
