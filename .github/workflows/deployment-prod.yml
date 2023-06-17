@@ -54,11 +54,11 @@ jobs:
         IMAGE_TAG: ${{ github.ref_name }}
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY .
-        docker build -f pgDockerfile -t postgres-custom .
+        docker build -f pgDockerfile -t $ECR_REGISTRY/postgres-custom .
         docker tag $ECR_REGISTRY/$ECR_REPOSITORY $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY
-        docker push postgres-custom
+        docker push $ECR_REGISTRY/postgres-custom
         
     - name: Install kubectl
       uses: azure/setup-kubectl@v2.0
