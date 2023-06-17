@@ -72,13 +72,13 @@ jobs:
           echo "${{ env.KUBE_CONFIG_DATA }}" > $HOME/.kube/config       
     
     
-    - name: Set Postgres DB Secret
-      uses: azure/k8s-create-secret@v4
-      with:
-        secret-name: 'pgsql-secret'
-        POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        id: pgsql-secret
+    #- name: Set Postgres DB Secret
+    #  uses: azure/k8s-create-secret@v4
+    #  with:
+    #    secret-name: 'pgsql-secret'
+    #    POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+    #    POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+    #    id: pgsql-secret
            
     - name: Deploy to EKS
       run: |
