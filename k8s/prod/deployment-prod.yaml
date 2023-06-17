@@ -5,7 +5,7 @@ metadata:
   labels:
     app: ecommerce-public-api-1
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: ecommerce-public-api-1
@@ -19,6 +19,12 @@ spec:
           image: 052758471237.dkr.ecr.ap-south-1.amazonaws.com/promotion-assessment/ecommerce-public-api-1:latest
           ports:
             - containerPort: 80
+          env:
+            - name: DB_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: pgsql-secret
+                  key: dbconnstring
 
 ---
 apiVersion: v1

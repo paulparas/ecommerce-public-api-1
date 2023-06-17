@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using public_api_interface;
+using public_api_interface.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +21,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 
+string connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+
+builder.Services.AddEntityFrameworkNpgsql().AddDbContext<ApiDbContext>(opt =>
+        opt.UseNpgsql(connectionString));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
