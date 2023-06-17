@@ -81,7 +81,7 @@ jobs:
     
     - name: Deploy to EKS
       run: |
-        kubectl apply -f k8s/deployment-prod.yaml
+        kubectl apply -f k8s/prod
         kubectl apply -f k8s/ingress.yaml
     
     # - name: Deploy to Kubernetes cluster                                                                            
