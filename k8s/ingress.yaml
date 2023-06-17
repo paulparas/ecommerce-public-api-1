@@ -16,4 +16,4 @@ spec:
           service:
             name: ecommerce-public-api-1-clusterip
             port:
-              number: 5001
+              number: 5001  
